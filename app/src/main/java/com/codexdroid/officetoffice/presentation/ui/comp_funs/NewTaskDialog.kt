@@ -33,7 +33,7 @@ fun NewTaskDialog(
     AlertDialog(
         onDismissRequest = { onDismiss() },
         title = { Text(
-            text = "Akshay, your stuff",
+            text = "Hey, your stuff",
             fontFamily = AppConstants.getUbuntuFont()
         ) },
         text = {
