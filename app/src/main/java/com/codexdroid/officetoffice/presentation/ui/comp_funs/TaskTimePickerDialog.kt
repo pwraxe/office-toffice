@@ -31,7 +31,7 @@ fun TaskTimePickerDialog(
     val selectedHour by remember { mutableIntStateOf(calendar.get(Calendar.HOUR_OF_DAY)) }
     val selectedMinute by remember { mutableIntStateOf(calendar.get(Calendar.MINUTE)) }
 
-    val timePicker = rememberTimePickerState(initialHour = selectedHour, initialMinute = selectedMinute, is24Hour = false)
+    val timePicker = rememberTimePickerState(initialHour = selectedHour, initialMinute = selectedMinute, is24Hour = true)
 
     AlertDialog(
         onDismissRequest = onDismissRequest,

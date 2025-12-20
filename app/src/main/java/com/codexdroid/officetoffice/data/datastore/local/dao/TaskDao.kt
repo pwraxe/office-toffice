@@ -1,14 +1,11 @@
 package com.codexdroid.officetoffice.data.datastore.local.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
-import androidx.room.Update
 import com.codexdroid.officetoffice.data.datastore.local.entity.TaskEntity
-import com.codexdroid.officetoffice.data.model.TaskData
 
 @Dao
 interface TaskDao {
@@ -18,7 +15,7 @@ interface TaskDao {
     suspend fun insertTask(task: TaskEntity)
 
     @Transaction
-    @Query("SELECT * FROM task_table")
+    @Query("SELECT * FROM task_table ORDER BY createdOn DESC")
     suspend fun readTasks(): List<TaskEntity>
 
 

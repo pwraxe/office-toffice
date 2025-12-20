@@ -4,6 +4,7 @@ import android.content.Context
 import com.codexdroid.officetoffice.data.datastore.DataStoreManager
 import com.codexdroid.officetoffice.data.datastore.local.dao.TaskDao
 import com.codexdroid.officetoffice.data.datastore.local.database.TaskDatabase
+import com.codexdroid.officetoffice.data.datastore.workers.WorkerFactory
 import com.codexdroid.officetoffice.data.repository.TaskRepositoryImpl
 import com.codexdroid.officetoffice.data.repository.TimeRepositoryImpl
 import com.codexdroid.officetoffice.domain.repository.TaskRepository
@@ -18,6 +19,7 @@ import com.codexdroid.officetoffice.domain.usecase.SaveCheckOutTimeUseCase
 import com.codexdroid.officetoffice.domain.usecase.UpdateIsDoneUseCase
 import com.codexdroid.officetoffice.domain.usecase.UpdateTaskUseCase
 import com.codexdroid.officetoffice.domain.usecase.UserOnboardingUserCase
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -121,6 +123,18 @@ object AppModule {
     @Singleton
     fun provideDataStoreManager(@ApplicationContext context: Context): DataStoreManager {
         return DataStoreManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWorkerFactory(@ApplicationContext context: Context): WorkerFactory {
+        return WorkerFactory(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseFirestore(): FirebaseFirestore {
+        return FirebaseFirestore.getInstance()
     }
 
 }

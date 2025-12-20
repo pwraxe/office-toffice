@@ -17,6 +17,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.OfficeToffice"
         tools:targetApi="31">
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+
+            <!-- Disable the default initializer -->
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
         <activity
             android:name=".presentation.ui.MainActivity"
             android:exported="true"

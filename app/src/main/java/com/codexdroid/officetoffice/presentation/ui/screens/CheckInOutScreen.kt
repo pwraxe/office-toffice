@@ -6,21 +6,26 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -36,6 +41,8 @@ import com.codexdroid.officetoffice.presentation.viewmodels.TaskViewModel
 import com.codexdroid.officetoffice.utils.AppConstants
 import com.codexdroid.officetoffice.utils.AppConstants.getUbuntuFont
 import com.codexdroid.officetoffice.utils.AppConstants.to12HourFormat
+import com.codexdroid.officetoffice.utils.OnClickEvents
+import com.codexdroid.officetoffice.utils.calculateTotalHours
 import com.google.gson.Gson
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -55,6 +62,7 @@ fun CheckInOutScreen(
     val activity = LocalActivity.current
     val vibrator = AppConstants.getVibratorService(context)
     val selectedTask by taskViewModel.selectedTask.collectAsState()
+    val showTotalHours by taskViewModel.showTotalHours.collectAsState()
 
 
     BackHandler {
@@ -65,29 +73,51 @@ fun CheckInOutScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(color = Color.White)
+            .windowInsetsPadding(WindowInsets.statusBars)
             .padding(16.dp)
     ) {
 
-        CenterAlignedTopAppBar(
-            title = {
-                Text (
-                    text = "Office Toffice",
-                    color = Color.Black,
-                    fontFamily = getUbuntuFont(true),
-                    modifier = modifier.combinedClickable (
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = if (showTotalHours) {
+                Arrangement.SpaceBetween
+            } else {
+                Arrangement.Center
+            }
+        ) {
+
+            // OfficeToffice text
+            Text (
+                text = "Office Toffice",
+                color = Color.Black,
+                fontFamily = getUbuntuFont(true),
+                fontSize = 26.sp,
+                modifier = Modifier
+                    .clickable (
                         enabled = true,
                         onClick = {
                             vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
                             taskViewModel.updateCheckInTime(0L)
                             taskViewModel.updateCheckOutTime(0L)
+                            taskViewModel.triggerDataEvent(OnClickEvents.EVENT_CLEAR_CHECK_IN_OUT_TIME, "CheckInOutScreen")
+
                         }
                     )
-                )
-            },
-            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                containerColor = Color.White // Set the background color to white
             )
-        )
+
+            // Show totalHours only if valid
+            if (showTotalHours) {
+                Text(
+                    text = calculateTotalHours(checkInTime,checkOutTime),
+                    color = Color.Black,
+                    fontFamily = getUbuntuFont(true),
+                    fontSize = 48.sp,
+                )
+            }
+        }
 
         Row (modifier = modifier.padding(top = 20.dp)) {
             Column {
@@ -104,6 +134,7 @@ fun CheckInOutScreen(
                                 enabled = true,
                                 onClick = {
                                     taskViewModel.updateCheckInTime(System.currentTimeMillis())
+                                    taskViewModel.triggerDataEvent(OnClickEvents.EVENT_CHECK_IN, "CheckInOutScreen")
                                 },
                                 onLongClick = {
                                     vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
@@ -131,6 +162,7 @@ fun CheckInOutScreen(
                                 enabled = true,
                                 onClick = {
                                     taskViewModel.updateCheckOutTime(System.currentTimeMillis())
+                                    taskViewModel.triggerDataEvent(OnClickEvents.EVENT_CHECK_OUT, "CheckInOutScreen")
                                 },
                                 onLongClick = {
                                     vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
@@ -151,6 +183,7 @@ fun CheckInOutScreen(
                     task,
                     onCheckClicked = {
                         taskViewModel.updateIsDone(it)
+                        taskViewModel.triggerDataEvent(OnClickEvents.EVENT_TASK_COMPLETED, "CheckInOutScreen")
                     },
                     onEditClicked = {
                         taskViewModel.updateSelectedTask(it)
@@ -158,6 +191,7 @@ fun CheckInOutScreen(
                     },
                     onDeleteClicked = {
                         taskViewModel.deleteTask(it)
+                        taskViewModel.triggerDataEvent(OnClickEvents.EVENT_TASK_DELETED, "CheckInOutScreen")
                     }
                 )
             }
@@ -180,6 +214,11 @@ fun CheckInOutScreen(
         if (openNewTaskDialog.first) {
             Log.d("AXE","SelectedTask: ${Gson().toJson(selectedTask)}")
 
+            /** Sending Data events to Firestore*/
+            val eventName = if (selectedTask.task.isEmpty()) OnClickEvents.EVENT_TASK_DIALOG_OPEN else OnClickEvents.EVENT_TASK_EDITING
+            val screenName = if (selectedTask.task.isEmpty()) "CheckInOutScreen/NewTaskDialog" else "CheckInOutScreen/EditTaskDialog"
+            taskViewModel.triggerDataEvent(eventName, screenName)
+
             NewTaskDialog(
                 taskData = selectedTask,
                 onDismiss = {
@@ -192,11 +231,13 @@ fun CheckInOutScreen(
                         //New Add
                         val taskData = TaskData(0, it, System.currentTimeMillis(), false)
                         taskViewModel.insertTask(taskData)
+                        taskViewModel.triggerDataEvent(OnClickEvents.EVENT_TASK_ADDED, "CheckInOutScreen")
                     }
                     else {
                         //update
                         val taskData = TaskData(selectedTask.id, it, selectedTask.createdOn, selectedTask.isDone)
                         taskViewModel.updateTask(taskData)
+                        taskViewModel.triggerDataEvent(OnClickEvents.EVENT_TASK_UPDATED, "CheckInOutScreen")
                     }
                     taskViewModel.updateSelectedTask(TaskData())
                     taskViewModel.updateOpenNewTaskDialogToEdit(isOpen = false, forEdit = false)
@@ -205,6 +246,7 @@ fun CheckInOutScreen(
         }
 
         if (!isOnboardingDone) {
+            taskViewModel.triggerDataEvent(OnClickEvents.EVENT_INSTRUCTION_DIALOG_OPEN, "CheckInOutScreen/InstructionScreen")
             OnBoardingDialog { taskViewModel.makeOnboardingDone() }
         }
     }

@@ -6,6 +6,8 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("dagger.hilt.android.plugin")
     id("androidx.room")
+    alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.google.firebase.crashlytics)
 }
 
 android {
@@ -28,11 +30,15 @@ android {
 
     buildTypes {
         release {
+            isDebuggable = false
             isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            buildConfigField("boolean","ENABLE_CRASHLYTICS","true")
+        }
+        debug {
+            isDebuggable = true
+            isMinifyEnabled = false
+            buildConfigField("boolean","ENABLE_CRASHLYTICS","false")
         }
     }
     compileOptions {
@@ -44,6 +50,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -60,6 +67,8 @@ dependencies {
     implementation(libs.androidx.hilt.common)
     implementation(libs.androidx.media3.session)
     implementation(libs.androidx.appcompat)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.crashlytics)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -77,6 +86,8 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
     kapt(libs.hilt.compiler)
+    implementation(libs.androidx.hilt.work)
+    kapt(libs.androidx.hilt.compiler)
 
 
     implementation(libs.gson)

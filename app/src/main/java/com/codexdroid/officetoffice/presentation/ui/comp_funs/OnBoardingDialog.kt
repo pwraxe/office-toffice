@@ -2,7 +2,7 @@ package com.codexdroid.officetoffice.presentation.ui.comp_funs
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -15,7 +15,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -28,7 +27,7 @@ import kotlinx.coroutines.launch
 
 @Preview
 @Composable
-fun OnBoardPreview(modifier: Modifier = Modifier) {
+fun OnBoardPreview() {
     OnBoardingDialog(onUnderstoodClicked = {})
 }
 
@@ -41,7 +40,6 @@ fun OnBoardingDialog(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     val scope = rememberCoroutineScope()
 
-
     ModalBottomSheet(
         onDismissRequest = {
             scope.launch {
@@ -49,21 +47,26 @@ fun OnBoardingDialog(
                 onUnderstoodClicked()
             }
         },
-        sheetState = sheetState
+        sheetState = sheetState,
+        windowInsets = WindowInsets(0,0,0,0)
     ) {
 
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(12.dp)
         ) {
 
-            InfoCard("Check-In", " helps to get record Morning Time")
-            InfoCard("Check-Out", " helps to get record Evening Time")
-            InfoCard("OfficeToffice Header"," helps to reset the time")
-            InfoCard("DEVICE VOLUME DOWN",  " helps to add new task")
-            InfoCard("DEVICE VOLUME UP", " helps to Review this App info again")
-
+            listOf(
+                "Check-In" to "Records your morning check-in time to start tracking work hours.",
+                "Check-Out" to "Records your evening check-out time to calculate total working hours.",
+                "Office to Office" to "Resets both check-in and check-out times for a new work session.",
+                "Device Volume Down" to "Quickly add a new task using the hardware volume down button.",
+                "Device Volume Up" to "Reopen and review the application information at any time.",
+                "" to "The app uses a 24-hour time format to calculate total working hours. If the calculated duration is negative or invalid, the total hours will be hidden."
+            ).forEach {
+                InfoCard(it.first,it.second)
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
             Button(
@@ -73,22 +76,22 @@ fun OnBoardingDialog(
                         onUnderstoodClicked()
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
             ) {
-                Text("Understood", fontFamily = AppConstants.getUbuntuFont())
+                Text("Okay, I got it", fontFamily = AppConstants.getUbuntuFont())
             }
         }
     }
 }
 
-
-
 @Composable
 fun InfoCard(
-    start: String, end: String,
-    modifier: Modifier = Modifier) {
+    spanText: String, end: String
+) {
     OutlinedCard (
-        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
         shape = RoundedCornerShape(4.dp)
     ) {
 
@@ -99,8 +102,9 @@ fun InfoCard(
                         fontFamily = AppConstants.getUbuntuFont(true),
                     )
                 ) {
-                    append(start)
+                    append(spanText)
                 }
+                if (spanText != "") append(" ")
                 append(end)
             },
             fontFamily = AppConstants.getUbuntuFont(),

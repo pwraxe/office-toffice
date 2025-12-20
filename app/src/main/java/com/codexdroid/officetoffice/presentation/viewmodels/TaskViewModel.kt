@@ -2,6 +2,7 @@ package com.codexdroid.officetoffice.presentation.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.codexdroid.officetoffice.data.datastore.workers.WorkerFactory
 import com.codexdroid.officetoffice.data.model.TaskData
 import com.codexdroid.officetoffice.domain.usecase.UseCaseContainer
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -10,9 +11,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.abs
 
 @HiltViewModel
-class TaskViewModel @Inject constructor(private val useCaseContainer: UseCaseContainer) : ViewModel() {
+class TaskViewModel @Inject constructor(
+    private val useCaseContainer: UseCaseContainer,
+    private val workerFactory: WorkerFactory
+) : ViewModel() {
 
     private val _checkInTime = MutableStateFlow(0L)
     val checkInTime = _checkInTime.asStateFlow()
@@ -38,6 +43,8 @@ class TaskViewModel @Inject constructor(private val useCaseContainer: UseCaseCon
     private val _selectedTask = MutableStateFlow(TaskData())
     val selectedTask = _selectedTask.asStateFlow()
 
+    private val _showTotalHours = MutableStateFlow(false)
+    val showTotalHours = _showTotalHours.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -69,6 +76,7 @@ class TaskViewModel @Inject constructor(private val useCaseContainer: UseCaseCon
         viewModelScope.launch {
             useCaseContainer.saveCheckInTimeUseCase.saveCheckInTime(time)
         }
+        updateShowTotalHours()
     }
 
     fun updateCheckOutTime(time: Long) {
@@ -76,6 +84,7 @@ class TaskViewModel @Inject constructor(private val useCaseContainer: UseCaseCon
         viewModelScope.launch {
             useCaseContainer.saveCheckOutTimeUseCase.saveCheckOutTime(time)
         }
+        updateShowTotalHours()
     }
 
     fun updateTimeFor(timeFor: String) {
@@ -137,5 +146,18 @@ class TaskViewModel @Inject constructor(private val useCaseContainer: UseCaseCon
 
     fun makeOnboardingUnDone() {
         _isOnboardingDone.value = false
+    }
+
+    /** To show total hours if valid time entered*/
+    private fun updateShowTotalHours() {
+        _showTotalHours.value = (checkInTime.value > 0 && checkOutTime.value > 0) && (abs(checkInTime.value - checkOutTime.value) > 0L) && (checkInTime.value < checkOutTime.value)
+        if ((checkInTime.value - checkOutTime.value) < 0) {
+            _checkInTime.value = 0L
+            _checkOutTime.value = 0L
+        }
+    }
+
+    fun triggerDataEvent(eventName: String, screenName: String) {
+        workerFactory.createWorker(eventName, screenName)
     }
 }

@@ -1,24 +1,18 @@
 package com.codexdroid.officetoffice.utils
 
 
-import android.content.Context
-import android.os.Build
-import android.os.VibrationEffect
-import android.os.Vibrator
-import android.os.VibratorManager
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
 import com.codexdroid.officetoffice.utils.AppConstants.getUbuntuFont
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
+import java.util.Locale
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -48,8 +42,6 @@ fun Modifier.onClickListener(
     }
 }
 
-
-
 @Composable
 fun LargeText(text: String, modifier: Modifier =  Modifier) {
     Text(
@@ -58,4 +50,13 @@ fun LargeText(text: String, modifier: Modifier =  Modifier) {
         fontFamily = getUbuntuFont(true),
         modifier = modifier
     )
+}
+
+fun calculateTotalHours(startTime: Long, endTime: Long): String {
+    var durationMillis = endTime - startTime
+    if (durationMillis < 0) durationMillis += TimeUnit.DAYS.toMinutes(1)
+    val hours = TimeUnit.MILLISECONDS.toHours(durationMillis)
+    val minutes = TimeUnit.MILLISECONDS.toMinutes(durationMillis) % 60
+
+    return String.format(Locale.getDefault(), "%d.%02dHr", hours, minutes)
 }
