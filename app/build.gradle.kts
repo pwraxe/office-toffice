@@ -18,13 +18,14 @@ android {
         schemaDirectory("$projectDir/schemas")
     }
 
+
     defaultConfig {
         applicationId = "com.codexdroid.officetoffice"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
+        setProperty("archivesBaseName", "OfficeToffice_V${android.defaultConfig.versionName}")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
