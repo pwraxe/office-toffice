@@ -151,10 +151,6 @@ class TaskViewModel @Inject constructor(
     /** To show total hours if valid time entered*/
     private fun updateShowTotalHours() {
         _showTotalHours.value = (checkInTime.value > 0 && checkOutTime.value > 0) && (abs(checkInTime.value - checkOutTime.value) > 0L) && (checkInTime.value < checkOutTime.value)
-        if ((checkInTime.value - checkOutTime.value) < 0) {
-            _checkInTime.value = 0L
-            _checkOutTime.value = 0L
-        }
     }
 
     fun triggerDataEvent(eventName: String, screenName: String) {
