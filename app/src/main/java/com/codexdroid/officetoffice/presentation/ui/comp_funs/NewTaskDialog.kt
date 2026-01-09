@@ -26,7 +26,7 @@ fun NewTaskDialog(
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit,
 ) {
-    Log.d("AXe","Data in Dialong : ${Gson().toJson(taskData)}")
+
     val isForAdd = taskData.task.isEmpty()
     var textInput by remember { mutableStateOf( taskData.task) }
 

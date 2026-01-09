@@ -5,6 +5,7 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.WorkerParameters
+import com.codexdroid.officetoffice.BuildConfig
 import com.codexdroid.officetoffice.utils.AppConstants
 import com.codexdroid.officetoffice.utils.Logger
 import com.google.android.gms.tasks.Tasks
@@ -39,23 +40,25 @@ class DataEventWorker @AssistedInject constructor(
                 "deviceName" to deviceName
             )
 
-            try {
-                Tasks.await(
-                    firestore.collection("DeviceEvents")
-                        .document(deviceUniqueId)
-                        .collection(deviceName.toString())
-                        .document("$time")
-                        .set(data)
-                )
-            } catch (e: Exception) {
-                Tasks.await(
-                    firestore.collection("Exceptions")
-                        .document(deviceUniqueId)
-                        .collection(deviceName.toString())
-                        .document("$time")
-                        .set("message" to "${e.message}")
-                )
-                return@withContext Result.failure()
+            if (!BuildConfig.DEBUG) {
+                try {
+                    Tasks.await(
+                        firestore.collection("DeviceEvents")
+                            .document(deviceUniqueId)
+                            .collection(deviceName.toString())
+                            .document("$time")
+                            .set(data)
+                    )
+                } catch (e: Exception) {
+                    Tasks.await(
+                        firestore.collection("Exceptions")
+                            .document(deviceUniqueId)
+                            .collection(deviceName.toString())
+                            .document("$time")
+                            .set("message" to "${e.message}")
+                    )
+                    return@withContext Result.failure()
+                }
             }
         } else {
             Logger.debug("DataEventWorker", "DeviceUniqueId is null, skipping Firestore upload")

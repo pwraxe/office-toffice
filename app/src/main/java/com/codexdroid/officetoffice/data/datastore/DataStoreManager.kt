@@ -7,7 +7,9 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.codexdroid.officetoffice.utils.Logger
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
 
@@ -39,19 +41,19 @@ class DataStoreManager(private val context: Context) {
     fun getCheckInTime(): Flow<Long> {
         return context.dataStore.data.map { preferences ->
             preferences[checkInTimeKey] ?: 0L
-        }
+        }.distinctUntilChanged()
     }
 
     fun getCheckOutTime(): Flow<Long> {
         return context.dataStore.data.map { preferences ->
             preferences[checkOutTimeKey] ?: 0L
-        }
+        }.distinctUntilChanged()
     }
 
     fun getIsOnboardingDone(): Flow<Boolean> {
         return context.dataStore.data.map { preferences ->
             preferences[isFirstTimeKey] ?: false
-        }
+        }.distinctUntilChanged()
     }
 
 }

@@ -6,12 +6,12 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,7 +20,9 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -29,9 +31,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import com.codexdroid.officetoffice.R
 import com.codexdroid.officetoffice.data.model.TaskData
+import com.codexdroid.officetoffice.presentation.ui.navigations.Screens
 import com.codexdroid.officetoffice.presentation.ui.comp_funs.NewTaskDialog
 import com.codexdroid.officetoffice.presentation.ui.comp_funs.OnBoardingDialog
 import com.codexdroid.officetoffice.presentation.ui.comp_funs.TasksItem
@@ -44,11 +51,13 @@ import com.codexdroid.officetoffice.utils.AppConstants.to12HourFormat
 import com.codexdroid.officetoffice.utils.OnClickEvents
 import com.codexdroid.officetoffice.utils.calculateTotalHours
 import com.google.gson.Gson
+import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun CheckInOutScreen(
     taskViewModel: TaskViewModel,
+    navHostController: NavHostController,
     modifier: Modifier = Modifier) {
 
     val checkInTime by taskViewModel.checkInTime.collectAsState()
@@ -62,7 +71,7 @@ fun CheckInOutScreen(
     val activity = LocalActivity.current
     val vibrator = AppConstants.getVibratorService(context)
     val selectedTask by taskViewModel.selectedTask.collectAsState()
-    val showTotalHours by taskViewModel.showTotalHours.collectAsState()
+    val showTotalHours = (checkInTime  > 0 && checkOutTime > 0) && (abs(checkInTime - checkOutTime) > 0L) && (checkInTime < checkOutTime)
 
 
     BackHandler {
@@ -146,7 +155,33 @@ fun CheckInOutScreen(
                 }
             }
 
-            Spacer(modifier = modifier.weight(1f))
+            Row(
+                modifier = modifier.weight(1f).padding(horizontal = 6.dp),
+                horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = modifier
+                        .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(10.dp))
+                        .padding(horizontal = 10.dp, vertical = 10.dp).clickable(enabled = true, onClick = {
+                            navHostController.navigate(Screens.NotificationScreen.route)
+                        })
+
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_add_notification),
+                        contentDescription = "Notification Icon"
+                    )
+                    Text(text = "Remind me",
+                        fontFamily = getUbuntuFont(false),
+                        textAlign = TextAlign.Center,
+                        fontSize = 12.sp,
+                        modifier = modifier.align(alignment = Alignment.CenterHorizontally)
+                    )
+                }
+            }
+
+            //Spacer(modifier = modifier.weight(1f))
 
             Column {
                 AppConstants.RegularText("Check-Out")

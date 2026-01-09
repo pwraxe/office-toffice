@@ -7,16 +7,14 @@ import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.codexdroid.officetoffice.presentation.ui.comp_funs.OnBoardingDialog
-import com.codexdroid.officetoffice.presentation.ui.screens.CheckInOutScreen
+import com.codexdroid.officetoffice.presentation.ui.navigations.AppNavigation
 import com.codexdroid.officetoffice.presentation.ui.screens.PermissionHandlerScreen
-import com.codexdroid.officetoffice.presentation.ui.theme.OfficeTofficeTheme
+import com.codexdroid.officetoffice.presentation.theme.OfficeTofficeTheme
 import com.codexdroid.officetoffice.presentation.viewmodels.TaskViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -39,14 +37,15 @@ class MainActivity : ComponentActivity() {
             OfficeTofficeTheme {
                 var isAllPermissionGranted by remember { mutableStateOf(false) }
 
-                PermissionHandlerScreen(
-                    permissions = requiredPermission.toTypedArray(),
-                    onPermissionsGranted = {
-                        isAllPermissionGranted = true
-                    }
-                )
                 if (isAllPermissionGranted) {
-                    CheckInOutScreen(taskViewModel)
+                    AppNavigation(taskViewModel)
+                } else {
+                    PermissionHandlerScreen(
+                        permissions = requiredPermission.toTypedArray(),
+                        onPermissionsGranted = {
+                            isAllPermissionGranted = true
+                        }
+                    )
                 }
             }
         }

@@ -23,8 +23,8 @@ android {
         applicationId = "com.codexdroid.officetoffice"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.2"
+        versionCode = 3
+        versionName = "1.3"
         setProperty("archivesBaseName", "OfficeToffice_V${android.defaultConfig.versionName}")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -93,6 +93,7 @@ dependencies {
 
     implementation(libs.gson)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.datastore.preferences)
 
 

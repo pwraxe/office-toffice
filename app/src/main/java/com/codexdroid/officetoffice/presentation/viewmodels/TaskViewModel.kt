@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.codexdroid.officetoffice.data.datastore.workers.WorkerFactory
 import com.codexdroid.officetoffice.data.model.TaskData
 import com.codexdroid.officetoffice.domain.usecase.UseCaseContainer
+import com.codexdroid.officetoffice.utils.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -76,7 +77,6 @@ class TaskViewModel @Inject constructor(
         viewModelScope.launch {
             useCaseContainer.saveCheckInTimeUseCase.saveCheckInTime(time)
         }
-        updateShowTotalHours()
     }
 
     fun updateCheckOutTime(time: Long) {
@@ -84,7 +84,6 @@ class TaskViewModel @Inject constructor(
         viewModelScope.launch {
             useCaseContainer.saveCheckOutTimeUseCase.saveCheckOutTime(time)
         }
-        updateShowTotalHours()
     }
 
     fun updateTimeFor(timeFor: String) {
@@ -146,11 +145,6 @@ class TaskViewModel @Inject constructor(
 
     fun makeOnboardingUnDone() {
         _isOnboardingDone.value = false
-    }
-
-    /** To show total hours if valid time entered*/
-    private fun updateShowTotalHours() {
-        _showTotalHours.value = (checkInTime.value > 0 && checkOutTime.value > 0) && (abs(checkInTime.value - checkOutTime.value) > 0L) && (checkInTime.value < checkOutTime.value)
     }
 
     fun triggerDataEvent(eventName: String, screenName: String) {
